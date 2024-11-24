@@ -22,8 +22,8 @@ public class Producer<ProductType> implements Runnable {
             while (true) {
                 MILLISECONDS.sleep(timeToProduce);
                 ProductType product = (ProductType) ("Product №" + produceCounter.getAndIncrement());
-                table.produce(product);
                 updateGUI(table);
+                table.produce(product);
             }
 
         } catch (InterruptedException interruptedException) {

@@ -17,9 +17,9 @@ public class Consumer<ProductType> implements Runnable {
     public void run() {
         try {
             while (true) {
-                ProductType product = table.consume();
-                updateGUI(table);
                 MILLISECONDS.sleep(timeToConsume);
+                updateGUI(table);
+                ProductType product = table.consume();
             }
 
         } catch (InterruptedException interruptedException) {
