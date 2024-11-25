@@ -2,75 +2,75 @@ package producers_and_consumers;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class ProducerConsumerTest {
+
     private static JPanel[] squares;
     private static JFrame frame;
     private static final int capacity = 10;
+    private static final Random random = new Random();
 
     public static void main(String[] args) {
-        testDataWithFixedTime();
+        testDataWithoutFixedTime();
     }
 
     private static void  testDataWithFixedTime() {
         Table<String> table = new Table<>(capacity);
         createAndShowGUI();
 
-        int fixedTimeMillis = 500;
+        int fixedTimeMillis = 100;
 
-        Producer<String> firstProducer = new Producer<>(table, fixedTimeMillis);
-        Producer<String> secondProducer = new Producer<>(table, fixedTimeMillis);
-        Producer<String> thirdProducer = new Producer<>(table, fixedTimeMillis);
-        Producer<String> fourthProducer = new Producer<>(table, fixedTimeMillis);
-        Producer<String> fifthProducer = new Producer<>(table, fixedTimeMillis);
-        Producer<String> sixthProducer = new Producer<>(table, fixedTimeMillis);
-        Producer<String> seventhProducer = new Producer<>(table, fixedTimeMillis);
-        Producer<String> eighthProducer = new Producer<>(table, fixedTimeMillis);
+        int countProducers = 8;
+        int countConsumers = 8;
 
-        Consumer<String> firstConsumer = new Consumer<>(table, fixedTimeMillis);
-        Consumer<String> secondConsumer = new Consumer<>(table, fixedTimeMillis);
-        Consumer<String> thirdConsumer = new Consumer<>(table, fixedTimeMillis);
-        Consumer<String> fourthConsumer = new Consumer<>(table, fixedTimeMillis);
-        Consumer<String> fifthConsumer = new Consumer<>(table, fixedTimeMillis);
-        Consumer<String> sixthConsumer = new Consumer<>(table, fixedTimeMillis);
-        Consumer<String> seventhConsumer = new Consumer<>(table, fixedTimeMillis);
-        Consumer<String> eightthConsumer = new Consumer<>(table, fixedTimeMillis);
+        List<Producer<String>> producers = new ArrayList<>();
+        List<Consumer<String>> consumers = new ArrayList<>();
 
-        new Thread(firstProducer, "First producer").start();
-        new Thread(secondProducer, "Second producer").start();
-        new Thread(thirdProducer, "Third producer").start();
-        new Thread(fourthProducer, "Fourth producer").start();
-        new Thread(fifthProducer, "Fifth producer").start();
-        new Thread(sixthProducer, "Sixth producer").start();
-        new Thread(seventhProducer, "Seventh producer").start();
-        new Thread(eighthProducer, "Eighth producer").start();
+        for (int i = 0; i < countProducers; i++) {
+            producers.add(new Producer<>(table, fixedTimeMillis));
+        }
 
-        new Thread(firstConsumer, "First consumer").start();
-        new Thread(secondConsumer, "Second consumer").start();
-        new Thread(thirdConsumer, "Third consumer").start();
-        new Thread(fourthConsumer, "Fourth consumer").start();
-        new Thread(fifthConsumer, "Fifth consumer").start();
-        new Thread(sixthConsumer, "Sixth consumer").start();
-        new Thread(seventhConsumer, "Seventh consumer").start();
-        new Thread(eightthConsumer, "Eighth consumer").start();
+        for (int i = 0; i < countConsumers; i++) {
+            consumers.add(new Consumer<>(table, fixedTimeMillis));
+        }
+
+        for (int i = 0; i < producers.size(); i++) {
+            new Thread(producers.get(i), "Producer №" + i).start();
+        }
+
+        for (int i = 0; i < consumers.size(); i++) {
+            new Thread(consumers.get(i), "Consumer №" + i).start();
+        }
     }
 
     private static void testDataWithoutFixedTime() {
         Table<String> table = new Table<>(capacity);
         createAndShowGUI();
 
-        Producer<String> firstProducer = new Producer<>(table, 500);
-        Producer<String> secondProducer = new Producer<>(table, 600);
+        int countProducers = 8;
+        int countConsumers = 8;
 
-        Consumer<String> firstConsumer = new Consumer<>(table, 1000);
-        Consumer<String> secondConsumer = new Consumer<>(table, 900);
-        Consumer<String> thirdConsumer = new Consumer<>(table, 800);
+        List<Producer<String>> producers = new ArrayList<>();
+        List<Consumer<String>> consumers = new ArrayList<>();
 
-        new Thread(firstProducer, "First producer").start();
-        new Thread(secondProducer, "Second producer").start();
-        new Thread(firstConsumer, "First consumer").start();
-        new Thread(secondConsumer, "Second consumer").start();
-        new Thread(thirdConsumer, "Third consumer").start();
+        for (int i = 0; i < countProducers; i++) {
+            producers.add(new Producer<>(table, random.nextInt(500, 900)));
+        }
+
+        for (int i = 0; i < countConsumers; i++) {
+            consumers.add(new Consumer<>(table, random.nextInt(500, 900)));
+        }
+
+        for (int i = 0; i < producers.size(); i++) {
+            new Thread(producers.get(i), "Producer №" + i).start();
+        }
+
+        for (int i = 0; i < consumers.size(); i++) {
+            new Thread(consumers.get(i), "Consumer №" + i).start();
+        }
     }
 
     private static void createAndShowGUI() {
