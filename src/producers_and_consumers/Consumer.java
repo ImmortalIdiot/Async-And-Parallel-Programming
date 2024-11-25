@@ -1,7 +1,6 @@
 package producers_and_consumers;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static producers_and_consumers.ProducerConsumerTest.updateGUI;
 
 public class Consumer<ProductType> implements Runnable {
 
@@ -18,7 +17,6 @@ public class Consumer<ProductType> implements Runnable {
         try {
             while (true) {
                 MILLISECONDS.sleep(timeToConsume);
-                updateGUI(table);
                 ProductType product = table.consume();
             }
 

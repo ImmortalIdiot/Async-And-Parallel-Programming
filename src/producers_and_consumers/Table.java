@@ -20,6 +20,7 @@ public class Table<ProductType> {
         }
 
         table.add(product);
+        ProducerConsumerTest.updateGUI(this);
         currentSize = table.size();
         System.out.println(Thread.currentThread().getName() + " produced product: " + product + ".\n" +
                 "Product count - " + table.size());
@@ -32,6 +33,7 @@ public class Table<ProductType> {
         }
 
         ProductType product = table.poll();
+        ProducerConsumerTest.updateGUI(this);
         currentSize = table.size();
         System.out.println(Thread.currentThread().getName() + " consumed product: " + product + ".\n" +
                 "Product count - " + table.size());
