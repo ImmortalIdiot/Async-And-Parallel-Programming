@@ -1,10 +1,7 @@
 package parallel_minor.executors;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class ParallelExecutor {
 
@@ -32,62 +29,55 @@ public class ParallelExecutor {
         return minorMatrix;
     }
 
-    public BigInteger calculateDeterminant(int[][] matrix) throws InterruptedException {
-        // TODO: change the logic
+    public BigInteger calculateDeterminant(int[][] matrix) {
+        ForkJoinPool pool = new ForkJoinPool();
+        return pool.invoke(new DeterminantTask(matrix));
+    }
 
-        int n = matrix.length;
+    private static class DeterminantTask extends RecursiveTask<BigInteger> {
 
-        if (n == 1) {
-            return BigInteger.valueOf(matrix[0][0]);
+        private final int[][] matrix;
+
+        private DeterminantTask(int[][] matrix) {
+            this.matrix = matrix;
         }
 
-        if (n == 2) {
-            return BigInteger.valueOf(matrix[0][0])
-                    .multiply(BigInteger.valueOf(matrix[1][1]))
-                    .subtract(BigInteger.valueOf(matrix[0][1])
-                            .multiply(BigInteger.valueOf(matrix[1][0])));
+        @Override
+        protected BigInteger compute() {
+            int n = matrix.length;
+
+            if (n == 1) {
+                return BigInteger.valueOf(matrix[0][0]);
+            }
+
+            if (n == 2) {
+                return BigInteger.valueOf(matrix[0][0])
+                        .multiply(BigInteger.valueOf(matrix[1][1]))
+                        .subtract(BigInteger.valueOf(matrix[0][1])
+                                .multiply(BigInteger.valueOf(matrix[1][0])));
+            }
+
+            BigInteger result = BigInteger.ZERO;
+
+            DeterminantTask[] subtasks = new DeterminantTask[n];
+            BigInteger[] resultParts = new BigInteger[n];
+
+            for (int column = 0; column < n; column++) {
+                int[][] minorMatrix = minor(matrix, 0, column);
+                BigInteger coefficient = (column % 2 == 0) ? BigInteger.valueOf(1) : BigInteger.valueOf(-1);
+
+                subtasks[column] = new DeterminantTask(minorMatrix);
+                subtasks[column].fork();
+
+                resultParts[column] = coefficient.multiply(BigInteger.valueOf(matrix[0][column]));
+            }
+
+            for (int column = 0; column < n; column++) {
+                BigInteger determinant = subtasks[column].join();
+                result = result.add(resultParts[column].multiply(determinant));
+            }
+
+            return result;
         }
-
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        ArrayList<Runnable> tasks = new ArrayList<>();
-        ArrayList<BigInteger> results = new ArrayList<>();
-
-        CountDownLatch countDownLatch = new CountDownLatch(n);
-
-        for (int column = 0; column < n; column++) {
-            final int finalColumn = column;
-            tasks.add(() -> {
-                try {
-                    int[][] minorMatrix = minor(matrix, 0, finalColumn);
-                    BigInteger determinant = calculateDeterminant(minorMatrix);
-                    BigInteger coefficient = (finalColumn % 2 == 0) ? BigInteger.valueOf(1) : BigInteger.valueOf(-1);
-
-                    synchronized (results) {
-                        results.add(coefficient
-                                .multiply(BigInteger.valueOf(matrix[0][finalColumn]))
-                                .multiply(determinant));
-                    }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    countDownLatch.countDown();
-                }
-
-            });
-        }
-
-        for (Runnable task : tasks) {
-            executorService.submit(task);
-        }
-
-        countDownLatch.await();
-
-        BigInteger result = BigInteger.ZERO;
-
-        for (BigInteger partOfResult: results) {
-            result.add(partOfResult);
-        }
-
-        return result;
     }
 }

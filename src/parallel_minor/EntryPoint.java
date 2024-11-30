@@ -10,7 +10,7 @@ import java.math.BigInteger;
 
 public class EntryPoint {
 
-    private static final int matrixOrder = 10;
+    private static final int matrixOrder = 11;
     private static final MatrixGenerator matrixGenerator = new MatrixGenerator(matrixOrder);
 
     public static void main(String[] args) {
@@ -38,18 +38,13 @@ public class EntryPoint {
         ParallelExecutor parallelExecutor = new ParallelExecutor();
         int[][] matrix = getMatrix();
 
-        try {
+        long start = System.currentTimeMillis();
+        BigInteger result = parallelExecutor.calculateDeterminant(matrix);
+        long end = System.currentTimeMillis();
 
-            long start = System.currentTimeMillis();
-            BigInteger result = parallelExecutor.calculateDeterminant(matrix);
-            long end = System.currentTimeMillis();
-
-            FindingDeterminantResultSaver.save("RecursiveParallelism.txt",
-                    end - start,
-                    result);
-        } catch (InterruptedException interruptedException) {
-            System.out.println(interruptedException.getMessage());
-        }
+        FindingDeterminantResultSaver.save("RecursiveParallelism.txt",
+                end - start,
+                result);
     }
 
     private static int[][] getMatrix() {
